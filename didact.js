@@ -1,3 +1,4 @@
+// 汇集了函数节点和普通原生html节点
 function createElement(type, props, ...children) {
   return {
     type,
@@ -100,6 +101,7 @@ function commitRoot() {
   wipRoot = null
 }
 // 变更推送到真实 DOM 的过程，主要在 commitWork（递归遍历 Fiber 树，根据 effectTag 插入/更新/删除 DOM）和 updateDom（具体设置 DOM 属性和事件）这两处完成。
+//树用链表实现很快
 function commitWork(fiber) {
   if (!fiber) {
     return
@@ -265,6 +267,12 @@ function updateHostComponent(fiber) {
   reconcileChildren(fiber, fiber.props.children)
 }
 // 打标，更新虚拟dom
+// 调和器
+//链表结构让遍历和 diff 更快。
+// 只比较同级节点，避免全树递归。 剪枝
+// 先打标记，后批量提交，减少 DOM 操作。
+// 可中断，保证响应性
+// 只对比同一个父节点的同级节点
 function reconcileChildren(wipFiber, elements) {
   let index = 0
   let oldFiber =
